@@ -10,7 +10,7 @@ namespace ShopifyBackendFall2022.Models
             base(options)
         { }
 
-
+        public DbSet<Location>? locations { get; set; }
         public DbSet<InventoryItem>? inventoryItems { get; set; }
     }
 }

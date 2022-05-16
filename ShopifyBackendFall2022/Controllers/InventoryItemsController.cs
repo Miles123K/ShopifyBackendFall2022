@@ -22,23 +22,46 @@ namespace ShopifyBackendFall2022.Controllers
 
         // GET: api/InventoryItems
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<InventoryItem>>> GetinventoryItems()
+        public async Task<ActionResult<IEnumerable<InventoryItem>>> GetInventoryItems()
         {
-          if (_context.inventoryItems == null)
-          {
-              return NotFound();
-          }
+            if (_context.inventoryItems == null)
+            {
+                return NotFound();
+            }
             return await _context.inventoryItems.ToListAsync();
+        }
+
+        // GET: api/InventoryItems/findByName/name
+        [HttpGet("findByName/{name}")]
+        public async Task<ActionResult<IEnumerable<InventoryItem>>> GetInventoryItemsByName(string name)
+        {
+            if (_context.inventoryItems == null)
+            {
+                return NotFound();
+            }
+
+            return await _context.inventoryItems.Where(x => x.Name == name).ToListAsync();
+        }
+
+        [HttpGet("findByLocationID/{locationId}")]
+        public async Task<ActionResult<IEnumerable<InventoryItem>>> GetInventoryItemsByLocation(int locationId)
+        {
+            if (_context.inventoryItems == null)
+            {
+                return NotFound();
+            }
+
+            return await _context.inventoryItems.Where(x => (x.LocationId != null) && (x.LocationId == locationId)).ToListAsync();
         }
 
         // GET: api/InventoryItems/5
         [HttpGet("{id}")]
         public async Task<ActionResult<InventoryItem>> GetInventoryItem(int id)
         {
-          if (_context.inventoryItems == null)
-          {
-              return NotFound();
-          }
+            if (_context.inventoryItems == null)
+            {
+                return NotFound();
+            }
             var inventoryItem = await _context.inventoryItems.FindAsync(id);
 
             if (inventoryItem == null)
@@ -59,7 +82,18 @@ namespace ShopifyBackendFall2022.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(inventoryItem).State = EntityState.Modified;
+            if (_context.inventoryItems == null)
+            {
+                return NotFound();
+            }
+            //_context.Entry(inventoryItem).State = EntityState.Modified;
+
+            if (_context.locations != null && !_context.locations.Where(x => x.Id == inventoryItem.LocationId).Any())
+            {
+                return NotFound();
+            }
+
+            _context.inventoryItems.Update(inventoryItem);
 
             try
             {
@@ -85,10 +119,10 @@ namespace ShopifyBackendFall2022.Controllers
         [HttpPost]
         public async Task<ActionResult<InventoryItem>> PostInventoryItem(InventoryItem inventoryItem)
         {
-          if (_context.inventoryItems == null)
-          {
-              return Problem("Entity set 'InventoryContext.inventoryItems'  is null.");
-          }
+            if (_context.inventoryItems == null)
+            {
+                return Problem("Entity set 'InventoryContext.inventoryItems' is null.");
+            }
             _context.inventoryItems.Add(inventoryItem);
             await _context.SaveChangesAsync();
 
@@ -114,8 +148,6 @@ namespace ShopifyBackendFall2022.Controllers
 
             return NoContent();
         }
-
-        [HttpGet("{name}")]
 
         private bool InventoryItemExists(int id)
         {
